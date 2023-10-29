@@ -4,3 +4,5 @@ music
 notes-list.txt
 tts_google1.mp3
 notes-list.txt
+chromedriver/
+ __pycache__/
