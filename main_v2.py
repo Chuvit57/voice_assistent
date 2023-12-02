@@ -15,7 +15,7 @@ os.environ['PATH'] += ':' + chrome_driver_path
 def listen_command():
     """The function will return the recognized command"""
     sr = speech_recognition.Recognizer()
-    sr.pause_threshold = 0.6
+    sr.pause_threshold = 0.5
 
     try:
         with speech_recognition.Microphone() as mic:
@@ -27,28 +27,20 @@ def listen_command():
         return speaker_assistant('Я не поняла, пожалуйста повторите команду')
 
 
-def greeting():
-    """Greeting function"""
-    return speaker_assistant('Привет! Я говорящий ассистент. Меня зовут Николь или просто Ника')
-
-
 def create_note():
     """Create a note"""
-    # print('Какую добавим заметку?')
     speaker_assistant('Слушаю! Какую добавить заметку?')
-    # time.sleep(5)
     query = listen_command()
 
     with open('notes-list.txt', 'a') as file:
         file.write(f'{query}\n')
 
     return speaker_assistant(f'Я записала, Вы добавили заметку: {query}')
-    # return f'Заметка: "{query}" добавлена в note-list'
 
 
 def time_now():
     time_checker = datetime.now()
-    speaker_assistant(f"Сейчас питерское время: {time_checker.hour} точка {time_checker.minute} ")
+    return speaker_assistant(f'Сейчас питерское время: {time_checker.hour} точка {time_checker.minute}')
 
 
 def play_music():
@@ -60,20 +52,18 @@ def play_music():
     return f'Танцуй под {random_file.split("/")[-1]}'
 
 
-# def stop_music():
-#     """Stop the currently playing music"""
-#     os.system('pkill xdg-open')
-#     speaker_assistant('Музыка выключена')
-
-
 def restart_pc():
     os.system('shutdown -r +5')
-    speaker_assistant('Компьютер будет перезагружен через 5 минут. Для отмены скажите: отмена')
+    return speaker_assistant('Компьютер будет перезагружен через 5 минут. Для отмены скажите: отмена')
 
 
-def cansel_restart_pc():
+def cancel_restart_pc():
     os.system('shutdown -c')
-    speaker_assistant('Перезагрузка компьютере успешно отменена')
+    return speaker_assistant('Перезагрузка компьютера успешно отменена')
+
+
+def exit():
+    return speaker_assistant('Спасибо! До свидания')
 
 
 def open_browser():
@@ -90,54 +80,43 @@ def open_browser():
 
     if 'google' in query:
         speaker_assistant('Что будем искать?')
-
         query = listen_command()
         query = query.split()
-
         driver.get('https://www.google.com/search?q=' + '+'.join(query))
-        speaker_assistant(f'Поиск по {query} успешно запущен')
+        return speaker_assistant(f'Поиск по {query} успешно запущен')
 
     elif 'youtube' in query:
         speaker_assistant('Что будем смотреть?')
-
         query = listen_command()
         query = query.split()
-
         driver.get('https://www.youtube.com/results?search_query=' + '+'.join(query))
-        speaker_assistant('Приятного просмотра')
-
-        return
+        return speaker_assistant('Приятного просмотра')
 
     else:
-        speaker_assistant('Не понял тебя')
-
-        return
+        return speaker_assistant('Не понял тебя')
 
 
-def exit_off():
-    speaker_assistant('Спасибо! До свидание')
-    sys.exit()
+class Assistant:
+    def __init__(self, name):
+        self.name = name
 
+    def greeting(self):
+        """Greeting function"""
+        return speaker_assistant(f'Привет! Я говорящий ассистент. Меня зовут {self.name}')
 
-def main():
-    assistant_name = 'Ника'
-    while True:
-        query = listen_command()
-        if assistant_name.lower() in query.lower():
-            command = query.lower().replace(assistant_name.lower(), '').strip()
-            if command:
-                command_matched = False
-                for k, v in command_dict['commands'].items():
-                    if command in v:
-                        if k == 'exit_off':
-                            exit_off()
-                        else:
-                            print(globals()[k]())
-                            command_matched = True
-                            break
-                if not command_matched:
-                    print("Простите, я не поняла команду.")
+    def main(self):
+        while True:
+            query = listen_command()
+            if self.name.lower() in query.lower():
+                command = query.lower().replace(self.name.lower(), '').strip()
+                if command:
+                    command_matched = False
+                    for k, v in command_dict['commands'].items():
+                        if command in v:
+                            if k == 'exit':
+                                return exit
 
 
 if __name__ == '__main__':
-    main()
+    assistant = Assistant(name="Assistant")
+    assistant.main()
